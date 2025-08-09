@@ -1,90 +1,114 @@
-# PROG8850Assignment5
-mysql, python for working with indexes
+README.md in your project folder:
 
+markdown
+Copy
+Edit
+# PROG8850 Assignment 5 - MySQL Index Timing Script
 
-Download `archive.zip`, a dataset of ~100,000 ecommerce orders from [here](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce?resource=download) using your google id. Make a mysql database to create the schema and import the data from the .csv files. Make some tests that time queries on amount and other scalar fields in te database.
+## Overview
 
-Use the `MATCH () ... AGAINST` syntax to test some full text searches and time them as well.
+This project contains a Python script to connect to a MySQL database and run timing tests on various SQL queries, including scalar queries and full-text search queries. The script runs EXPLAIN statements (where applicable) and measures execution times, outputting the results to the console and a summary file.
 
-Use EXPLAIN to investigate how your searches are being run.
+---
 
-Create indexes and re-run your tests and timings. Make some notes and commit them to this repository of who would be interested in running your searches and what their goals are. Note how your performance improvements would help them achieve their goals.
+## Prerequisites
 
-## Marking
+- Python 3.x
+- MySQL Server running and accessible (default port 3306 or 3307 as per your setup)
+- Python package `mysql-connector-python`
 
-|Item|Out Of|
-|--|--:|
-|creating the database|1|
-|loading csv data|2|
-|tests of scalar fields like amounts|2|
-|tests of full text searches|2|
-|creating indices|2|
-|explanation of searches, goals and outcomes of indexing|1|
-|||
-|total|10|
+---
 
+## Setup Instructions
 
+1. **Clone or download this repository to your workspace.**
 
+2. **Install the required Python package:**
 
-## Notes
+   ```bash
+   pip install mysql-connector-python
+Prepare your MySQL database:
 
-To run the basic project:
+Ensure your MySQL server is running.
 
-```bash
-ansible-playbook up.yml
-```
+Create and populate the orders table in your database.
 
-To use mysql:
+Make sure full-text indexes exist on the columns used in full-text search queries (e.g., description).
 
-```bash
-mysql -u root -h 127.0.0.1 -p
-```
+Configure environment variables (optional):
 
-To run github actions like (notice that the environment variables default for the local case):
+By default, the script connects using:
 
-```yaml
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+Host: 127.0.0.1
 
-      - name: Install MySQL client
-        run: sudo apt-get update && sudo apt-get install -y mysql-client
+Port: 3307
 
-      - name: Deploy to Database
-        env:
-          DB_HOST: ${{ secrets.DB_HOST || '127.0.0.1' }} 
-          DB_USER: ${{ secrets.DB_ADMIN_USER || 'root' }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD  || 'Secret5555'}}
-          DB_NAME: ${{ secrets.DB_NAME || 'mysql' }}
-        run: mysql -h $DB_HOST -u $DB_USER -p$DB_PASSWORD $DB_NAME < schema_changes.sql
-```
+User: root
 
-locally:
+Password: Secret5555
 
-first try
+Database: prog8850
 
-```bash
-bin/act
-```
+You can override these by setting environment variables before running the script:
 
-then if that doesn't work 
+bash
+Copy
+Edit
+export DB_HOST=your_host
+export DB_PORT=your_port
+export DB_USER=your_user
+export DB_PASSWORD=your_password
+export DB_NAME=your_database
+Run the timing script:
 
-```bash
-bin/act -P ubuntu-latest=-self-hosted
-```
+bash
+Copy
+Edit
+python3 path/to/index_timing.py
+Replace path/to/index_timing.py with the actual path, for example:
 
-to run in the codespace.
+bash
+Copy
+Edit
+python3 ./.devcontainer/scripts/index_timing.py
+Script Details
+The script runs three queries:
 
-To shut down:
+Count of orders where amount > 500
 
-```bash
-ansible-playbook down.yml
-```
+Average amount for orders between 10 and 200
 
-There is also a flyway migration here. To run the migration:
+Full-text search for "running shoes" in the description column
 
-```bash
-docker run --rm -v "/workspaces/<repo name>/migrations:/flyway/sql" redgate/flyway -user=root -password=Secret5555 -url=jdbc:mysql://172.17.0.1:3306/flyway_test migrate
-```
+For scalar queries (COUNT, AVG), EXPLAIN is skipped due to MySQL limitations.
 
-This is a reproducible mysql setup, with a flyway migration. It is also the start of an example of using flyway and github actions together. Flyway (jdbc) needs the database to exist. The github action creates it if it doesn't exist and flyway takes over from there.
+Execution times are printed and median timings are saved in timings_summary.txt.
+
+Troubleshooting
+Connection errors:
+
+Ensure MySQL is running and accessible on the specified host and port.
+
+Full-text index errors:
+
+Make sure the full-text index exists on the description column:
+
+sql
+Copy
+Edit
+ALTER TABLE orders ADD FULLTEXT(description);
+Load data errors:
+
+If loading CSV data into MySQL, ensure the file path is correct and local_infile is enabled:
+
+sql
+Copy
+Edit
+SET GLOBAL local_infile = 1;
+Contact
+For any issues or questions, please contact:
+
+Your Name: Durlabh Tilavat
+
+Email: Dtilavat8972@conestogac.on.ca
+
